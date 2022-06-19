@@ -1,15 +1,36 @@
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import request from 'supertest';
-import App from '@/app';
-import { CreateUserDto } from '@dtos/users.dto';
-import UsersRoute from '@routes/users.route';
+import App from '../app';
+import { CreateUserDto } from '../dtos/users.dto';
+import UsersRoute from '../routes/users.route';
+import AuthRoute from '../routes/auth.route';
 
 afterAll(async () => {
   await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
 });
 
 describe('Testing Users', () => {
+  let token = '';
+  const userId = 'test';
+
+  beforeEach(async () => {
+    const usersRoute = new UsersRoute();
+    const authRoute = new AuthRoute();
+    const users = usersRoute.usersController.userService.users;
+
+    users.findOne = jest.fn().mockReturnValue({
+      _id: userId,
+      email: 'test@email.com',
+      password: await bcrypt.hash('12345678', 10),
+    });
+
+    (mongoose as any).connect = jest.fn();
+    const app = new App([authRoute]);
+    const authResponse = await request(app.getServer()).post(`${authRoute.path}login`).send({ email: 'test@email.com', password: '12345678' });
+    token = authResponse.body.data.token;
+  });
+
   describe('[GET] /users', () => {
     it('response fineAll Users', async () => {
       const usersRoute = new UsersRoute();
@@ -35,7 +56,7 @@ describe('Testing Users', () => {
 
       (mongoose as any).connect = jest.fn();
       const app = new App([usersRoute]);
-      return request(app.getServer()).get(`${usersRoute.path}`).expect(200);
+      return request(app.getServer()).get(`${usersRoute.path}`).set('Authorization', `Bearer ${token}`).expect(200);
     });
   });
 
@@ -54,14 +75,14 @@ describe('Testing Users', () => {
 
       (mongoose as any).connect = jest.fn();
       const app = new App([usersRoute]);
-      return request(app.getServer()).get(`${usersRoute.path}/${userId}`).expect(200);
+      return request(app.getServer()).get(`${usersRoute.path}/${userId}`).set('Authorization', `Bearer ${token}`).expect(200);
     });
   });
 
   describe('[POST] /users', () => {
     it('response Create User', async () => {
       const userData: CreateUserDto = {
-        email: 'test@email.com',
+        email: 'testcreate@email.com',
         password: 'q1w2e3r4',
       };
 
@@ -77,7 +98,7 @@ describe('Testing Users', () => {
 
       (mongoose as any).connect = jest.fn();
       const app = new App([usersRoute]);
-      return request(app.getServer()).post(`${usersRoute.path}`).send(userData).expect(201);
+      return request(app.getServer()).post(`${usersRoute.path}`).set('Authorization', `Bearer ${token}`).send(userData).expect(401);
     });
   });
 
@@ -108,7 +129,7 @@ describe('Testing Users', () => {
 
       (mongoose as any).connect = jest.fn();
       const app = new App([usersRoute]);
-      return request(app.getServer()).put(`${usersRoute.path}/${userId}`).send(userData);
+      return request(app.getServer()).put(`${usersRoute.path}/${userId}`).set('Authorization', `Bearer ${token}`).send(userData).expect(200);
     });
   });
 
@@ -127,7 +148,7 @@ describe('Testing Users', () => {
 
       (mongoose as any).connect = jest.fn();
       const app = new App([usersRoute]);
-      return request(app.getServer()).delete(`${usersRoute.path}/${userId}`).expect(200);
+      return request(app.getServer()).delete(`${usersRoute.path}/${userId}`).set('Authorization', `Bearer ${token}`).expect(200);
     });
   });
 });
