@@ -24,7 +24,7 @@ services:
       DB_HOST: mongodb
       DB_PORT: 27017
       DB_DATABASE: dev
-      REDIS_URL: redis://wizard-iam-redis:6378
+      REDIS_URL: redis://redis:6378
     volumes:
       - ./:/app
       - /app/node_modules
@@ -33,8 +33,10 @@ services:
       - backend
     links:
       - mongodb
+      - redis
     depends_on:
       - mongodb
+      - redis
   mongodb:
     image: mongo
     container_name: mongodb
@@ -46,6 +48,14 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=$DB_PASSWORD
     volumes:
       - mongodb:/data/db
+    networks:
+      - backend
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --appendonly yes
+    ports:
+      - '6379:6379'
     networks:
       - backend
 
