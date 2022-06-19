@@ -1,8 +1,69 @@
 tags:
+- name: auth
+  description: Auth endpoints
 - name: users
   description: users API
+- name: api
+  description: Endpoint connected to external API
+
+
 
 paths:
+  /signin:
+    post:
+      tags:
+      - auth
+      summary: Register as new user
+      parameters:
+      - name: body
+        in: body
+        description: user Data
+        required: true
+        schema:
+          $ref: '#/definitions/users'
+      responses:
+        201:
+          description: 'Created'
+        400:
+          description: 'Bad Request'
+        409:
+          description: 'Conflict'
+        500:
+          description: 'Server Error'
+
+  /login:
+    post:
+      tags:
+      - auth
+      summary: Login to get and auth token
+      parameters:
+      - name: body
+        in: body
+        description: user Data
+        required: true
+        schema:
+          $ref: '#/definitions/users'
+      responses:
+        201:
+          description: 'Created'
+        400:
+          description: 'Bad Request'
+        409:
+          description: 'Conflict'
+        500:
+          description: 'Server Error'
+
+  /signout:
+    post:
+      tags:
+      - auth
+      summary: Log out
+      responses:
+        201:
+          description: 'Created'
+        500:
+          description: 'Server Error'
+
 # [GET] users
   /users:
     get:
@@ -97,6 +158,60 @@ paths:
           description: 'OK'
         409:
           description: 'Conflict'
+        500:
+          description: 'Server Error'
+
+# Api endpoints
+  /api/location:
+    get:
+      tags:
+      - api
+      summary: Find location by params
+      parameters:
+      - name: street
+        in: query
+        description: Street name
+        required: true
+      - name: country
+        in: query
+        description: country
+        required: true
+      - name: state
+        in: query
+        description: State
+        required: true
+      - name: city
+        in: query
+        description: city
+        required: true
+      - name: postalCode
+        in: query
+        description: Postal Code
+        required: true
+      responses:
+        200:
+          description: 'OK'
+        500:
+          description: 'Server Error'
+
+# Api endpoints
+  /api/weather:
+    get:
+      tags:
+      - api
+      summary: Find weather predictions by lat and long
+      parameters:
+      - name: lat
+        in: query
+        description: Latitude
+        required: true
+      - name: lon
+        in: query
+        description: Longitude
+        required: true
+      responses:
+        200:
+          description: 'OK'
         500:
           description: 'Server Error'
 
