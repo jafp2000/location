@@ -2,7 +2,6 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import request from 'supertest';
 import App from '../app';
-import { LocationDto, WeatherDto } from '../dtos/api.dto';
 import UsersRoute from '../routes/users.route';
 import AuthRoute from '../routes/auth.route';
 import ApiRoute from '../routes/api.route';
